@@ -1,29 +1,24 @@
-name: Deploy to k8s
+name: Merge Staging to Develop
 
 on:
   push:
     branches:
-      - main
-
-env:
-  KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      - staging
 
 jobs:
-  deploy:
-    runs-on: kubernetes
+  merge:
+    runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Create Docker Image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
+      - name: Merge staging to develop
+        run: |
+          git config --local user.email "reddyrajashekarlucky14@gmail.com"
+          git config --local user.name "Rajashekar16"
 
-    - name: Deploy to k8s
-      uses: appleboy/kubectl-action@v1.0.0
-      with:
-        args: apply -f deployment.yaml
-        env:
-          KUBECONFIG: ${{ env.KUBECONFIG }}
+          git fetch origin develop
+          git checkout develop
+          git merge --no-ff origin/staging -m "Merge changes from staging"
+          git push origin develop
